@@ -495,7 +495,8 @@ module.exports.ParseServerOptions = {
   },
   publicServerURL: {
     env: 'PARSE_PUBLIC_SERVER_URL',
-    help: 'Public URL to your parse server with http:// or https://.',
+    help:
+      'Optional. The public URL to Parse Server. This URL will be used to reach Parse Server publicly for features like password reset and email verification links. The option can be set to a string or a function that can be asynchronously resolved. The returned URL string must start with `http://` or `https://`.',
   },
   push: {
     env: 'PARSE_SERVER_PUSH',
@@ -1163,6 +1164,18 @@ module.exports.DatabaseOptions = {
     action: parsers.booleanParser,
     default: false,
   },
+  heartbeatFrequencyMS: {
+    env: 'PARSE_SERVER_DATABASE_HEARTBEAT_FREQUENCY_MS',
+    help:
+      'The MongoDB driver option to specify the frequency in milliseconds at which the driver checks the state of the MongoDB deployment.',
+    action: parsers.numberParser('heartbeatFrequencyMS'),
+  },
+  maxIdleTimeMS: {
+    env: 'PARSE_SERVER_DATABASE_MAX_IDLE_TIME_MS',
+    help:
+      'The MongoDB driver option to specify the amount of time in milliseconds that a connection can remain idle in the connection pool before being removed and closed.',
+    action: parsers.numberParser('maxIdleTimeMS'),
+  },
   maxPoolSize: {
     env: 'PARSE_SERVER_DATABASE_MAX_POOL_SIZE',
     help:
@@ -1197,6 +1210,12 @@ module.exports.DatabaseOptions = {
     help:
       'The duration in seconds after which the schema cache expires and will be refetched from the database. Use this option if using multiple Parse Servers instances connected to the same database. A low duration will cause the schema cache to be updated too often, causing unnecessary database reads. A high duration will cause the schema to be updated too rarely, increasing the time required until schema changes propagate to all server instances. This feature can be used as an alternative or in conjunction with the option `enableSchemaHooks`. Default is infinite which means the schema cache never expires.',
     action: parsers.numberParser('schemaCacheTtl'),
+  },
+  serverSelectionTimeoutMS: {
+    env: 'PARSE_SERVER_DATABASE_SERVER_SELECTION_TIMEOUT_MS',
+    help:
+      'The MongoDB driver option to specify the amount of time in milliseconds for a server to be considered suitable for selection.',
+    action: parsers.numberParser('serverSelectionTimeoutMS'),
   },
   socketTimeoutMS: {
     env: 'PARSE_SERVER_DATABASE_SOCKET_TIMEOUT_MS',

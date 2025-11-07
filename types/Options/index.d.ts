@@ -85,7 +85,7 @@ export interface ParseServerOptions {
     cacheAdapter?: Adapter<CacheAdapter>;
     emailAdapter?: Adapter<MailAdapter>;
     encodeParseObjectInCloudFunction?: boolean;
-    publicServerURL?: string;
+    publicServerURL?: string | (() => string) | (() => Promise<string>);
     pages?: PagesOptions;
     customPages?: CustomPagesOptions;
     liveQuery?: LiveQueryOptions;
@@ -234,6 +234,9 @@ export interface DatabaseOptions {
     maxStalenessSeconds?: number;
     minPoolSize?: number;
     maxPoolSize?: number;
+    serverSelectionTimeoutMS?: number;
+    maxIdleTimeMS?: number;
+    heartbeatFrequencyMS?: number;
     connectTimeoutMS?: number;
     socketTimeoutMS?: number;
     autoSelectFamily?: boolean;
