@@ -1820,4 +1820,86 @@ describe('OTP SMS auth adatper', () => {
     await Parse.User.logIn('username', 'password');
     expect(spy).not.toHaveBeenCalled();
   });
+
+  it('should return auth providers as object when set via environment variable', async () => {
+    const originalValue = process.env.PARSE_SERVER_AUTH_PROVIDERS;
+    const testValue = '{"myoauth":{"clientId":"test-client-id","clientSecret":"test-client-secret"}}';
+    
+    try {
+      process.env.PARSE_SERVER_AUTH_PROVIDERS = testValue;
+      await reconfigureServer({});
+      
+      const config = Config.get('test');
+      const authProviders = config.auth;
+      
+      expect(typeof authProviders).toBe('object');
+      expect(authProviders).not.toBe(testValue);
+      expect(authProviders.myoauth).toBeDefined();
+      expect(authProviders.myoauth.clientId).toBe('test-client-id');
+      expect(authProviders.myoauth.clientSecret).toBe('test-client-secret');
+    } finally {
+      if (originalValue !== undefined) {
+        process.env.PARSE_SERVER_AUTH_PROVIDERS = originalValue;
+      } else {
+        delete process.env.PARSE_SERVER_AUTH_PROVIDERS;
+      }
+    }
+  });
+
+  it('should login with auth provider configured via environment variable', async () => {
+    const originalValue = process.env.PARSE_SERVER_AUTH_PROVIDERS;
+    const testAdapter = {
+      validateAppId: () => Promise.resolve(),
+      validateAuthData: (authData) => {
+        if (authData.id === 'test-user-id' && authData.token === 'test-token') {
+          return Promise.resolve();
+        }
+        return Promise.reject(new Parse.Error(Parse.Error.OBJECT_NOT_FOUND, 'Invalid auth data'));
+      },
+    };
+    
+    try {
+      process.env.PARSE_SERVER_AUTH_PROVIDERS = '{"testProvider":{"module":"test"}}';
+      
+      const authenticationLoader = require('../lib/Adapters/Auth');
+      spyOn(authenticationLoader, 'loadAuthAdapter').and.returnValue({
+        adapter: testAdapter,
+        appIds: undefined,
+        providerOptions: {},
+      });
+      
+      await reconfigureServer({});
+      
+      const user = new Parse.User();
+      await user.save({
+        authData: {
+          testProvider: {
+            id: 'test-user-id',
+            token: 'test-token',
+          },
+        },
+      });
+      
+      expect(user.id).toBeDefined();
+      expect(user.getSessionToken()).toBeDefined();
+      
+      const user2 = new Parse.User();
+      await user2.save({
+        authData: {
+          testProvider: {
+            id: 'test-user-id',
+            token: 'test-token',
+          },
+        },
+      });
+      
+      expect(user2.id).toBe(user.id);
+    } finally {
+      if (originalValue !== undefined) {
+        process.env.PARSE_SERVER_AUTH_PROVIDERS = originalValue;
+      } else {
+        delete process.env.PARSE_SERVER_AUTH_PROVIDERS;
+      }
+    }
+  });
 });
