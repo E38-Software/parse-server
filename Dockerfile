@@ -35,13 +35,13 @@ VOLUME /parse-server/cloud /parse-server/config
 WORKDIR /parse-server
 
 # Copy build stage folders
-COPY --from=build /tmp/prod_node_modules /parse-server/node_modules
-COPY --from=build /tmp/lib lib
+COPY --from=build /tmp/prod_node_modules ./node_modules
+COPY --from=build /tmp/lib ./lib
+COPY --from=build /tmp/bin ./bin
+COPY --from=build /tmp/package*.json ./
+COPY --from=build /tmp/public_html ./public_html
+COPY --from=build /tmp/views ./views
 
-COPY package*.json ./
-COPY bin bin
-COPY public_html public_html
-COPY views views
 RUN mkdir -p logs && chown -R node: logs
 
 ENV PORT=1337
