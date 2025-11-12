@@ -10,7 +10,7 @@ Dockerfile
 .github
 
 # Build folder
-lib/
+# lib/
 
 # Tests
 spec/
