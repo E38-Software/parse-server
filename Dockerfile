@@ -16,6 +16,11 @@ COPY package*.json ./
 # Copy src to have config files for install
 COPY . .
 
+# Debug: verify src was copied
+RUN echo "=== Checking if src/Adapters/Logger exists ===" \
+ && ls -la src/Adapters/Logger/ \
+ && echo "=== Files copied successfully ==="
+
 # Install without scripts
 RUN npm ci --omit=dev --ignore-scripts \
     # Copy production node_modules aside for later
@@ -23,7 +28,12 @@ RUN npm ci --omit=dev --ignore-scripts \
     # Install all dependencies
  && npm ci \
     # Run build steps
- && npm run build
+ && npm run build \
+    # Debug: verify lib structure
+ && echo "=== Checking lib/Adapters/Logger ===" \
+ && ls -la lib/Adapters/Logger/ \
+ && echo "=== Checking if WinstonLoggerAdapter.js exists ===" \
+ && test -f lib/Adapters/Logger/WinstonLoggerAdapter.js && echo "File exists!" || echo "FILE NOT FOUND!"
 
 ############################################################
 # Release stage
@@ -42,7 +52,12 @@ COPY --from=build /tmp/package*.json ./
 COPY --from=build /tmp/public_html ./public_html
 COPY --from=build /tmp/views ./views
 
-RUN mkdir -p logs && chown -R node: logs
+# Debug: verify lib structure in release stage
+RUN echo "=== Release stage: Checking lib/Adapters/Logger ===" \
+ && ls -la lib/Adapters/Logger/ 2>&1 || echo "Directory not found!" \
+ && echo "=== Release stage: Checking if WinstonLoggerAdapter.js exists ===" \
+ && test -f lib/Adapters/Logger/WinstonLoggerAdapter.js && echo "File exists!" || echo "FILE NOT FOUND!" \
+ && mkdir -p logs && chown -R node: logs
 
 ENV PORT=1337
 USER node

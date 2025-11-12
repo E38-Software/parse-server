@@ -9,8 +9,17 @@ Dockerfile
 .git
 .github
 
-# Build folder
+# Build folder - keep commented to allow copying from build stage
 # lib/
+
+# Source folder - MUST be included for build
+!src/
+!bin/
+!public_html/
+!views/
+!.babelrc
+!package.json
+!package-lock.json
 
 # Tests
 spec/
